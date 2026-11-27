@@ -1,0 +1,34 @@
+# ---- 构建产物 ----
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/
+
+# ---- 发布与打包产物 ----
+packaging/publish/
+packaging/setup/payload/
+packaging/setup/payload.zip
+packaging/setup/out/
+packaging/setup/*.exe
+packaging/install.log
+packaging/tools/packages/
+packaging/tools/msix-stage/
+
+# ---- 敏感信息：自签名证书与私钥，绝不入库 ----
+packaging/certs/
+*.pfx
+*.p12
+*.key
+*.pem
+
+# ---- 本地工具链（.NET SDK / 截图工具，体积大且与机器相关） ----
+.tools/
+
+# ---- 工作区缓存 ----
+.workbuddy/
+
+# ---- 系统杂项 ----
+Thumbs.db
+Desktop.ini
+*.tmp

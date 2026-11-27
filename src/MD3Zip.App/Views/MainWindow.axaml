@@ -1,0 +1,387 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:MD3Zip.App.Localization"
+               x:Class="MD3Zip.App.Views.MainWindow"
+        Title="MD3 Zip"
+        Width="960" Height="640"
+        MinWidth="680" MinHeight="480"
+        CanResize="True"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Md3.MicaLayer}"
+        TransparencyLevelHint="Mica, AcrylicBlur, Blur"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+  <Grid RowDefinitions="40,Auto,*,Auto">
+
+    <!-- ============ 自定义标题栏（NoChrome + MD3 自绘窗口按钮） ============ -->
+    <Grid Grid.Row="0" Height="40" Margin="16,0,4,0" Background="Transparent"
+          PointerPressed="OnTitleBarPressed"
+          DoubleTapped="OnTitleBarDoubleTapped">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <!-- 左侧：应用标记 + 标题 -->
+      <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource Md3.PrimaryContainer}">
+          <Path Data="{DynamicResource Icon.Archive}"
+                Fill="{DynamicResource Md3.OnPrimaryContainer}"
+                Width="13" Height="13" Stretch="Uniform"
+                HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <TextBlock Text="MD3 Zip" Classes="title" VerticalAlignment="Center" />
+        <Border Background="{DynamicResource Md3.SurfaceContainerHighest}"
+                CornerRadius="8" Padding="7,2" VerticalAlignment="Center">
+          <TextBlock Text="7-Zip" Classes="caption" />
+        </Border>
+      </StackPanel>
+
+      <!-- 中间空白区可拖拽；右侧按钮不吃拖拽事件 -->
+      <Panel Grid.Column="1" Background="Transparent" />
+
+      <!-- 主题切换：32x32 圆形按钮 + 18px 图标 -->
+      <Button Grid.Column="2" Width="32" Height="32" CornerRadius="16" Padding="0"
+              Classes="icon" Command="{Binding ToggleThemeCommand}"
+              VerticalAlignment="Center" Margin="0,0,6,0"
+              ToolTip.Tip="{loc:T 切换深色 / 浅色}">
+        <Path Data="{DynamicResource Icon.Theme}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+              Width="18" Height="18" Stretch="Uniform" />
+      </Button>
+
+      <!-- 窗口控制：46x32 固定容器 + 10x10 描边矢量图标 -->
+      <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+        <Button Classes="caption" Click="OnMinimizeClick" ToolTip.Tip="{loc:T 最小化}">
+          <Path Data="M 0,5 L 10,5" />
+        </Button>
+        <Button Classes="caption" Click="OnMaximizeClick" ToolTip.Tip="{loc:T 最大化 / 还原}">
+          <Panel>
+            <Path x:Name="MaximizeGlyph" Data="M 0,0 L 10,0 L 10,10 L 0,10 Z" />
+            <Path x:Name="RestoreGlyph" Data="M 0,2 L 8,2 L 8,10 L 0,10 Z M 2,2 L 2,0 L 10,0 L 10,8 L 8,8"
+                  IsVisible="False" />
+          </Panel>
+        </Button>
+        <Button Classes="caption close" Click="OnCloseClick" ToolTip.Tip="{loc:T 关闭}">
+          <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" />
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <!-- ============ Top App Bar：面包屑 + 搜索 ============ -->
+    <Border Grid.Row="1" Padding="24,4,24,12">
+      <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+          <Button Grid.Column="0" Classes="icon"
+                  Command="{Binding GoUpCommand}"
+                  IsEnabled="{Binding CanGoUp}"
+                  ToolTip.Tip="{loc:T 返回上一级}">
+            <Path Data="{DynamicResource Icon.ChevronLeft}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                  Width="18" Height="18" Stretch="Uniform" />
+          </Button>
+
+          <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
+            <ItemsControl ItemsSource="{Binding Breadcrumbs}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="1" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Classes="crumb"
+                            Classes.current="{Binding IsCurrent}"
+                            Content="{Binding Name}"
+                            Command="{Binding $parent[Window].DataContext.NavigateCommand}"
+                            CommandParameter="{Binding Path}" />
+                    <Path Data="{DynamicResource Icon.ChevronRight}"
+                          Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                          Width="14" Height="14" Stretch="Uniform"
+                          VerticalAlignment="Center"
+                          IsVisible="{Binding !IsCurrent}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+            <Button Classes="outlined" Content="{loc:T 打开压缩包}" Command="{Binding OpenArchiveCommand}" />
+            <Button Classes="tonal" Content="{loc:T 解压全部}"
+                    Command="{Binding ExtractAllCommand}"
+                    IsEnabled="{Binding HasArchive}" />
+
+            <!-- 更多：新建 / 测试 / 校验和 / 追加 / 删除（自定义 Popup 以继承 MD3 主题） -->
+            <Button x:Name="MoreButton" Classes="icon" Command="{Binding ToggleMoreMenuCommand}"
+                    ToolTip.Tip="{loc:T 更多操作}">
+              <Path Data="{DynamicResource Icon.Tune}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                    Width="17" Height="17" Stretch="Uniform" />
+            </Button>
+
+            <Popup x:Name="MorePopup"
+                   PlacementTarget="{Binding #MoreButton}"
+                   Placement="BottomEdgeAlignedRight"
+                   VerticalOffset="6"
+                   IsLightDismissEnabled="True"
+                   IsOpen="{Binding IsMoreMenuOpen, Mode=TwoWay}">
+              <ThemeVariantScope x:Name="MoreMenuScope">
+              <Border Background="{DynamicResource Md3.OverlaySurface}"
+                      BorderBrush="{DynamicResource Md3.OverlayBorder}"
+                      BorderThickness="1"
+                      CornerRadius="16"
+                      Padding="6"
+                      MinWidth="252"
+                      BoxShadow="0 10 28 0 #55000000">
+                <StackPanel Spacing="1">
+                  <Button Classes="menuItem" Content="{loc:T 新建压缩包…}"
+                          Command="{Binding NewArchiveCommand}" Click="OnMenuActionClick" />
+                  <Border Classes="divider" Margin="8,4" />
+                  <Button Classes="menuItem" Content="{loc:T 测试压缩包完整性}"
+                          Command="{Binding TestArchiveCommand}" Click="OnMenuActionClick"
+                          IsEnabled="{Binding HasArchive}" />
+                  <Button Classes="menuItem" Content="{loc:T 计算校验和（CRC32 / SHA-256）}"
+                          Command="{Binding ComputeHashCommand}" Click="OnMenuActionClick"
+                          IsEnabled="{Binding HasArchive}" />
+                  <Border Classes="divider" Margin="8,4" />
+                  <Button Classes="menuItem" Content="{loc:T 向压缩包添加文件…}"
+                          Command="{Binding AddFilesCommand}" Click="OnMenuActionClick"
+                          IsEnabled="{Binding HasArchive}" />
+                  <Button Classes="menuItem" Content="{loc:T 删除选中条目…}"
+                          Command="{Binding DeleteSelectedCommand}" Click="OnMenuActionClick"
+                          IsEnabled="{Binding HasSelection}" />
+                  <Border Classes="divider" Margin="8,4" />
+                  <Button Classes="menuItem" Content="{Binding LanguageLabel}"
+                          Command="{Binding ToggleLanguageCommand}" Click="OnMenuActionClick" />
+                </StackPanel>
+              </Border>
+              </ThemeVariantScope>
+            </Popup>
+
+            <Button Classes="icon" Command="{Binding RevealArchiveCommand}"
+                    IsEnabled="{Binding HasArchive}" ToolTip.Tip="{loc:T 在资源管理器中显示}">
+              <Path Data="{DynamicResource Icon.OpenInNew}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                    Width="17" Height="17" Stretch="Uniform" />
+            </Button>
+            <Button Classes="icon" Command="{Binding CloseArchiveCommand}"
+                    IsEnabled="{Binding HasArchive}" ToolTip.Tip="{loc:T 关闭压缩包}">
+              <Path Data="{DynamicResource Icon.Close}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                    Width="16" Height="16" Stretch="Uniform" />
+            </Button>
+          </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+          <Grid Grid.Column="0">
+            <TextBox Classes="search" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="{loc:T 搜索归档内的文件与文件夹…}" Padding="42,10,40,10" />
+            <Path Data="{DynamicResource Icon.Search}"
+                  Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                  Width="17" Height="17" Stretch="Uniform"
+                  HorizontalAlignment="Left" VerticalAlignment="Center"
+                  Margin="16,0,0,0" IsHitTestVisible="False" />
+            <Button Classes="icon" Width="30" Height="30" CornerRadius="15"
+                    HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"
+                    Command="{Binding ClearSearchCommand}"
+                    IsVisible="{Binding IsSearching}"
+                    ToolTip.Tip="{loc:T 清空搜索}">
+              <Path Data="{DynamicResource Icon.Close}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                    Width="13" Height="13" Stretch="Uniform" />
+            </Button>
+          </Grid>
+
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                      IsVisible="{Binding HasSelection}">
+            <TextBlock Text="{Binding SelectionText}" Classes="caption" VerticalAlignment="Center" />
+            <Button Classes="tonal" Content="{loc:T 解压选中项}" Command="{Binding ExtractSelectedCommand}" />
+            <Button Classes="text" Content="{loc:T 取消选择}" Command="{Binding ClearSelectionCommand}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <!-- ============ 主内容区 ============ -->
+    <Grid Grid.Row="2" Margin="24,0,24,18">
+
+      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
+
+        <!-- 引擎缺失提示 -->
+        <Border Grid.Row="0" IsVisible="{Binding HasEngineError}"
+                Background="{DynamicResource Md3.ErrorContainer}"
+                CornerRadius="16" Padding="16,12">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Path Data="{DynamicResource Icon.Warning}" Fill="{DynamicResource Md3.OnErrorContainer}"
+                  Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" />
+            <StackPanel Spacing="2">
+              <TextBlock Text="{loc:T 压缩引擎不可用}" FontWeight="SemiBold"
+                         Foreground="{DynamicResource Md3.OnErrorContainer}" />
+              <TextBlock Text="{Binding EngineError}" Classes="caption" TextWrapping="Wrap"
+                         Foreground="{DynamicResource Md3.OnErrorContainer}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- 归档概要 -->
+        <Border Grid.Row="1" IsVisible="{Binding HasArchive}"
+                Background="{DynamicResource Md3.SurfaceContainerLow}" CornerRadius="20" Padding="20,14">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14"
+                    Background="{DynamicResource Md3.PrimaryContainer}">
+              <Path Data="{DynamicResource Icon.FolderZip}" Fill="{DynamicResource Md3.OnPrimaryContainer}"
+                    Width="22" Height="22" Stretch="Uniform"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+              <TextBlock Text="{Binding ArchiveTitle}" Classes="h2" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding ArchiveSummary}" Classes="caption" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding ArchiveLocationText}" Classes="caption" Opacity="0.7"
+                         TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <Button Classes="text" Content="{loc:T 全选}" Command="{Binding SelectAllCommand}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- 文件列表 -->
+        <Border Grid.Row="2" Classes="card" IsVisible="{Binding HasArchive}" ClipToBounds="True">
+          <Grid RowDefinitions="Auto,Auto,*">
+
+            <Grid Grid.Row="0" ColumnDefinitions="44,*,110,160,52" Margin="18,14,14,10">
+              <TextBlock Grid.Column="1" Text="{loc:T 名称}" Classes="label" />
+              <TextBlock Grid.Column="2" Text="{loc:T 大小}" Classes="label" />
+              <TextBlock Grid.Column="3" Text="{loc:T 修改时间}" Classes="label" />
+              <TextBlock Grid.Column="4" Text="{loc:T 选择}" Classes="label" HorizontalAlignment="Center" />
+            </Grid>
+
+            <Border Grid.Row="1" Classes="divider" Margin="18,0,18,0" />
+
+            <!-- 底部留出 76px：Extended FAB 悬浮在卡片右下角，列表滚到底时也不会被压住 -->
+            <ScrollViewer Grid.Row="2" Padding="10,6,10,76" VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding Entries}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="row" Margin="0,1" DoubleTapped="OnEntryDoubleTapped">
+                      <Grid ColumnDefinitions="44,*,110,160,52">
+                        <Path Grid.Column="0" Data="{Binding Icon}" Fill="{Binding IconBrush}"
+                              Width="20" Height="20" Stretch="Uniform"
+                              VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                          <TextBlock Text="{Binding Name}" Classes="body" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding KindText}" Classes="caption" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="{Binding SizeText}" Classes="caption"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="{Binding ModifiedText}" Classes="caption"
+                                   VerticalAlignment="Center" />
+                        <CheckBox Grid.Column="4" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Grid>
+        </Border>
+
+        <!-- 空状态 -->
+        <Panel Grid.Row="2" IsVisible="{Binding HasNoArchive}">
+          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14" MaxWidth="460">
+            <Border Width="96" Height="96" CornerRadius="28"
+                    Background="{DynamicResource Md3.SurfaceContainerHigh}"
+                    HorizontalAlignment="Center">
+              <Path Data="{DynamicResource Icon.FolderZip}" Fill="{DynamicResource Md3.Primary}"
+                    Width="44" Height="44" Stretch="Uniform"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="{loc:T 拖入压缩包即可浏览}" Classes="h1" HorizontalAlignment="Center" />
+            <TextBlock Text="{loc:T 支持 7z / zip / rar / tar / gz / xz 等格式；拖入普通文件或文件夹则直接开始新建压缩。}"
+                       Classes="caption" TextAlignment="Center" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,6,0,0">
+              <Button Classes="filled" Content="{loc:T 浏览压缩包}" Command="{Binding OpenArchiveCommand}" />
+            </StackPanel>
+          </StackPanel>
+        </Panel>
+
+        <!-- 无结果状态 -->
+        <Panel Grid.Row="2" IsVisible="{Binding IsSearchEmpty}">
+          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+            <TextBlock Text="{loc:T 没有匹配的条目}" Classes="title" HorizontalAlignment="Center" />
+            <TextBlock Text="{loc:T 换个关键词试试，或清空搜索框。}" Classes="caption" HorizontalAlignment="Center" />
+            <Button Classes="text" Content="{loc:T 清空搜索}" Command="{Binding ClearSearchCommand}"
+                    HorizontalAlignment="Center" />
+          </StackPanel>
+        </Panel>
+      </Grid>
+
+      <!-- 拖放提示层 -->
+      <Border Name="DropOverlay" IsVisible="False"
+              Background="{DynamicResource Md3.Scrim}" CornerRadius="24">
+        <Border BorderBrush="{DynamicResource Md3.Primary}" BorderThickness="2"
+                CornerRadius="20" Margin="10" >
+          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+            <Path Data="{DynamicResource Icon.Add}" Fill="{DynamicResource Md3.Primary}"
+                  Width="40" Height="40" Stretch="Uniform" HorizontalAlignment="Center" />
+            <TextBlock Text="{loc:T 松开以打开压缩包或开始压缩}" Classes="title" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
+      </Border>
+
+      <!-- 进度条（Linear Progress Indicator） -->
+      <Border IsVisible="{Binding IsBusy}"
+              VerticalAlignment="Bottom" HorizontalAlignment="Left"
+              Background="{DynamicResource Md3.SurfaceContainerHigh}"
+              CornerRadius="18" Padding="18,14" Width="480" Margin="0,0,0,6"
+              BoxShadow="0 4 16 0 #33000000">
+        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="{Binding ProgressText}" Classes="body"
+                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="icon" Width="32" Height="32" CornerRadius="16"
+                    Command="{Binding CancelCommand}" ToolTip.Tip="{loc:T 取消}">
+              <Path Data="{DynamicResource Icon.Stop}" Fill="{DynamicResource Md3.Error}"
+                    Width="14" Height="14" Stretch="Uniform" />
+            </Button>
+          </Grid>
+          <ProgressBar Grid.Row="1" IsIndeterminate="{Binding IsIndeterminate}"
+                       Value="{Binding ProgressPercent}" Minimum="0" Maximum="100" />
+          <TextBlock Grid.Row="2" Text="{Binding StatusText}" Classes="caption" />
+        </Grid>
+      </Border>
+
+      <!-- Extended FAB -->
+      <Button Classes="fab" Content="{loc:T 新建压缩}"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Margin="0,0,0,4"
+              Command="{Binding NewArchiveCommand}" />
+
+      <!-- Snackbar -->
+      <Border IsVisible="{Binding IsSnackbarVisible}"
+              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+              Margin="0,0,0,84"
+              Background="{DynamicResource Md3.InverseSurface}"
+              CornerRadius="12" Padding="18,12"
+              BoxShadow="0 6 18 0 #40000000">
+        <TextBlock Text="{Binding SnackbarText}" Foreground="{DynamicResource Md3.InverseOnSurface}"
+                   FontSize="13" TextWrapping="Wrap" MaxWidth="620" />
+      </Border>
+    </Grid>
+
+    <!-- ============ 状态栏 ============ -->
+    <Border Grid.Row="3" Padding="24,6,24,10" Background="Transparent">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding StatusText}" Classes="caption"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1" Text="{Binding CurrentDirectoryText}" Classes="caption" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

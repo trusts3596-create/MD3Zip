@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:MD3Zip.App.Localization"
+        x:Class="MD3Zip.App.Views.PreviewWindow"
+        Title="{loc:T 预览}"
+        Width="880" Height="640"
+        MinWidth="520" MinHeight="380"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="CenterOwner">
+
+  <Border Background="{DynamicResource Md3.SurfaceContainerHigh}"
+          CornerRadius="28"
+          BoxShadow="0 18 48 0 #66000000"
+          ClipToBounds="True">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+      <Grid Grid.Row="0" Height="40" Margin="26,10,8,4" Background="Transparent" PointerPressed="OnHeaderPressed">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Spacing="2">
+          <TextBlock Text="{Binding Title}" Classes="h2" TextTrimming="CharacterEllipsis" />
+          <TextBlock Text="{Binding Subtitle}" Classes="caption" />
+        </StackPanel>
+<Button Grid.Column="1" Classes="caption close" VerticalAlignment="Center"
+                Click="OnCloseClick" ToolTip.Tip="{loc:T 关闭}">
+          <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" />
+        </Button>
+      </Grid>
+
+      <Border Grid.Row="1" Classes="divider" Margin="26,0,26,0" />
+
+      <Panel Grid.Row="2" Margin="20,10,20,10">
+        <!-- 文本预览 -->
+        <Border IsVisible="{Binding IsText}" Background="{DynamicResource Md3.SurfaceContainerLowest}"
+                CornerRadius="18" Padding="4">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <SelectableTextBlock Text="{Binding TextContent}"
+                                 FontFamily="Cascadia Mono, Consolas, Microsoft YaHei UI, monospace"
+                                 FontSize="12.5"
+                                 Foreground="{DynamicResource Md3.OnSurface}"
+                                 TextWrapping="NoWrap"
+                                 Margin="14,10" />
+          </ScrollViewer>
+        </Border>
+
+        <!-- 图片预览 -->
+        <Border IsVisible="{Binding IsImage}" Background="{DynamicResource Md3.SurfaceContainerLowest}"
+                CornerRadius="18" Padding="10">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Image Source="{Binding Image}" Stretch="Uniform" />
+          </ScrollViewer>
+        </Border>
+
+        <!-- 不支持预览 -->
+        <StackPanel IsVisible="{Binding ShowFallback}" VerticalAlignment="Center"
+                    HorizontalAlignment="Center" Spacing="12" MaxWidth="420">
+          <Path Data="{DynamicResource Icon.File}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
+                Width="44" Height="44" Stretch="Uniform" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding Message}" Classes="body" TextAlignment="Center" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- 加载中 -->
+        <StackPanel IsVisible="{Binding IsLoading}" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="12">
+          <ProgressBar IsIndeterminate="True" Width="180" />
+          <TextBlock Text="{loc:T 正在从压缩包读取…}" Classes="caption" HorizontalAlignment="Center" />
+        </StackPanel>
+      </Panel>
+
+      <Grid Grid.Row="3" Margin="26,6,26,20" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+        <TextBlock Grid.Column="0" Text="{loc:T 预览内容会临时解压到系统临时目录}" Classes="caption"
+                   VerticalAlignment="Center" />
+        <Button Grid.Column="1" Classes="tonal" Content="{loc:T 用默认程序打开}" Command="{Binding OpenExternallyCommand}" />
+        <Button Grid.Column="2" Classes="filled" Content="{loc:T 关闭}" Click="OnCloseClick" />
+      </Grid>
+    </Grid>
+  </Border>
+</Window>

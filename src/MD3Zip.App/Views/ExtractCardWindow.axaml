@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:MD3Zip.App.Localization"
+        x:Class="MD3Zip.App.Views.ExtractCardWindow"
+        Title="MD3 Zip"
+        Width="420" Height="178"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Topmost="True"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="Manual">
+
+  <Border Background="{DynamicResource Md3.SurfaceContainerHigh}"
+          CornerRadius="24"
+          BoxShadow="0 16 40 0 #66000000"
+          ClipToBounds="True">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20,16,16,16" Background="Transparent"
+          PointerPressed="OnCardPressed">
+
+      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="12"
+                Background="{DynamicResource Md3.PrimaryContainer}">
+          <Panel>
+            <Path Data="{DynamicResource Icon.Extract}" Fill="{DynamicResource Md3.OnPrimaryContainer}"
+                  Width="19" Height="19" Stretch="Uniform"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  IsVisible="{Binding !IsCompleted}" />
+            <Path Data="{DynamicResource Icon.Check}" Fill="{DynamicResource Md3.OnPrimaryContainer}"
+                  Width="19" Height="19" Stretch="Uniform"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  IsVisible="{Binding IsCompleted}" />
+          </Panel>
+        </Border>
+
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+          <TextBlock Text="{Binding FileName}" Classes="title" TextTrimming="CharacterEllipsis" />
+          <TextBlock Text="{Binding OperationText}" Classes="caption" />
+        </StackPanel>
+
+<Button Grid.Column="2" Classes="caption close" VerticalAlignment="Center"
+                Command="{Binding CancelCommand}" IsVisible="{Binding ShowCancel}"
+                ToolTip.Tip="{loc:T 取消并关闭}">
+          <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" />
+        </Button>
+      </Grid>
+
+      <StackPanel Grid.Row="1" Spacing="8" VerticalAlignment="Center">
+        <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100"
+                     IsIndeterminate="{Binding IsIndeterminate}" Height="6" />
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0" Text="{Binding DetailText}" Classes="caption"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Grid.Column="1" Text="{Binding Percent, StringFormat={}{0:0}%}" Classes="caption" />
+        </Grid>
+      </StackPanel>
+
+      <TextBlock Grid.Row="2" Text="{Binding StatusText}" Classes="caption" Opacity="0.85"
+                 TextTrimming="CharacterEllipsis" MaxLines="2" TextWrapping="Wrap" />
+    </Grid>
+  </Border>
+</Window>

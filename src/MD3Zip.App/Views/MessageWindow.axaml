@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:MD3Zip.App.Localization"
+        x:Class="MD3Zip.App.Views.MessageWindow"
+        Title="{loc:T 提示}"
+        Width="560" Height="360"
+        MinWidth="420" MinHeight="260"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="CenterOwner">
+
+  <Border Background="{DynamicResource Md3.SurfaceContainerHigh}" CornerRadius="28"
+          BoxShadow="0 18 48 0 #66000000" ClipToBounds="True">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="26,20,26,20">
+
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Background="Transparent"
+            PointerPressed="OnHeaderPressed">
+        <StackPanel Grid.Column="0" Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Border Width="36" Height="36" CornerRadius="12"
+                    Background="{DynamicResource Md3.ErrorContainer}">
+              <Path Data="{DynamicResource Icon.Warning}" Fill="{DynamicResource Md3.OnErrorContainer}"
+                    Width="18" Height="18" Stretch="Uniform"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Name="TitleText" Classes="h2" VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBlock Name="MessageText" Classes="body" TextWrapping="Wrap" Opacity="0.9" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="caption close" VerticalAlignment="Top"
+                Click="OnCloseClick" ToolTip.Tip="{loc:T 关闭}">
+          <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" />
+        </Button>
+      </Grid>
+
+      <Border Name="DetailDivider" Grid.Row="1" Classes="divider" Margin="0,14,0,10" />
+
+      <Border Name="DetailBorder" Grid.Row="2" Background="{DynamicResource Md3.SurfaceContainerLowest}"
+              CornerRadius="14" Padding="4">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <SelectableTextBlock Name="DetailText"
+                               FontFamily="Cascadia Mono, Consolas, monospace"
+                               FontSize="11.5"
+                               Foreground="{DynamicResource Md3.OnSurfaceVariant}"
+                               TextWrapping="NoWrap"
+                               Margin="12,10" />
+        </ScrollViewer>
+      </Border>
+
+      <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right"
+                  Margin="0,14,0,0">
+        <Button Name="CancelButton" Classes="text" Content="{loc:T 取消}" Click="OnCancelClick" IsVisible="False" />
+        <Button Name="OkButton" Classes="filled" Content="{loc:T 知道了}" Click="OnOkClick" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

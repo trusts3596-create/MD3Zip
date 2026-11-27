@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12.0</LangVersion>
+    <AssemblyName>MD3Zip.Setup</AssemblyName>
+    <RootNamespace>MD3Zip.Setup</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationDefaultFont>Microsoft YaHei UI, 9.5pt</ApplicationDefaultFont>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Company>MD3 Zip</Company>
+    <Product>MD3 Zip</Product>
+    <AssemblyTitle>MD3 Zip 安装程序</AssemblyTitle>
+    <Description>MD3 Zip 安装向导</Description>
+    <ApplicationIcon>..\..\packaging\publish\app\Assets\AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MD3Zip.Core\MD3Zip.Core.csproj" />
+    <None Include="..\MD3Zip.Core\Localization\en-US.json" Link="Localization\en-US.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 由 packaging\build_setup.ps1 在编译前生成；缺失时仍可编译（运行时给出明确报错）。 -->
+    <EmbeddedResource Include="..\..\packaging\setup\payload.zip"
+                      LogicalName="MD3Zip.Payload.zip"
+                      Condition="Exists('..\..\packaging\setup\payload.zip')" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MD3 Zip 稀疏包（Sparse Package）清单
+
+  · 主程序与 Shell 扩展都放在包外的 ExternalLocation（发布输出目录），
+    清单只负责「应用身份 + COM 服务器 + 右键菜单注册」。
+  · com:Class/@Id、desktop5:Verb/@Clsid 与 RootExplorerCommand 的 [Guid]
+    必须完全一致（B2A6F3C1-9D7E-4A21-8C3D-5E6F7A8B9C01）。
+  · 所有 Verb 使用同一个 Id（MD3Zip）与同一个 CLSID。
+    注意：Windows 11 不会按 Verb Id 去重——同一文件若同时命中两个 ItemType
+    （如 "*" 与 ".7z"）就会出现两个菜单项。因此只注册 "*" / "Directory" /
+    "Directory\Background" 三类，"*" 已覆盖所有文件扩展名，不要重复注册后缀。
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap10 desktop4 desktop5 com rescap">
+
+  <Identity
+    Name="MD3Zip.Shell"
+    Publisher="CN=MD3Zip Dev"
+    Version="1.0.0.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>MD3 Zip 右键菜单</DisplayName>
+    <PublisherDisplayName>MD3 Zip</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <uap10:AllowExternalContent>true</uap10:AllowExternalContent>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="zh-CN" />
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application
+      Id="MD3Zip"
+      Executable="MD3Zip.App.exe"
+      uap10:TrustLevel="mediumIL"
+      uap10:RuntimeBehavior="win32App">
+
+      <uap:VisualElements
+        AppListEntry="none"
+        DisplayName="MD3 Zip"
+        Description="Material Design 3 风格的 7-Zip 外壳"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Logo150.png"
+        Square44x44Logo="Assets\Logo44.png" />
+
+      <Extensions>
+
+        <!-- 进程外 COM 服务器：由 dllhost.exe（SurrogateServer）承载，
+             即使 Shell 扩展崩溃也不会拖垮资源管理器 -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:SurrogateServer DisplayName="MD3 Zip Shell Extension">
+              <com:Class
+                Id="B2A6F3C1-9D7E-4A21-8C3D-5E6F7A8B9C01"
+                Path="MD3Zip.ShellExtension.comhost.dll"
+                ThreadingModel="STA" />
+            </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
+
+        <!-- Windows 11 折叠式现代右键菜单 -->
+        <desktop4:Extension Category="windows.fileExplorerContextMenus">
+          <desktop4:FileExplorerContextMenus>
+
+            <!-- 全文件类型：支持“添加到压缩包…” -->
+            <desktop5:ItemType Type="*">
+              <desktop5:Verb Id="MD3Zip" Clsid="B2A6F3C1-9D7E-4A21-8C3D-5E6F7A8B9C01" />
+            </desktop5:ItemType>
+
+            <!-- 文件夹与文件夹背景 -->
+            <desktop5:ItemType Type="Directory">
+              <desktop5:Verb Id="MD3Zip" Clsid="B2A6F3C1-9D7E-4A21-8C3D-5E6F7A8B9C01" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type="Directory\Background">
+              <desktop5:Verb Id="MD3Zip" Clsid="B2A6F3C1-9D7E-4A21-8C3D-5E6F7A8B9C01" />
+            </desktop5:ItemType>
+
+            <!-- 不要再为 .7z/.zip/.rar 等后缀单独注册 ItemType：
+                 "*" 已覆盖所有文件，重复注册会让 Windows 11 弹出两个「MD3 Zip」。 -->
+
+          </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="unvirtualizedResources" />
+  </Capabilities>
+
+</Package>
