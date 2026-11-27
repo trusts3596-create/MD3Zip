@@ -1,0 +1,112 @@
+MD3 Zip — Material Design 3 shell for 7-Zip
+Copyright (c) 2026 MD3 Zip contributors
+
+====================================================================
+本项目许可
+====================================================================
+
+本项目源码（MD3Zip.Core / MD3Zip.App / MD3Zip.ShellExtension /
+MD3Zip.Setup 及全部脚本、文档）按 GNU Lesser General Public
+License version 2.1 or later（GNU LGPL-2.1+）发布，与所链接的
+7-Zip 主许可保持一致。
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+LGPL-2.1 全文：https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+（亦可从 http://www.gnu.org/ 获取副本。）
+
+====================================================================
+所分发的第三方组件（遵从上游守则，原文照录）
+====================================================================
+
+本仓库的 Assets/7z/ 目录包含 7-Zip 23.01 x64 的 7z.exe 与 7z.dll，
+其版权与许可见同目录 License.txt。按上游要求，二进制分发必须复现
+该文件中的相关许可信息，摘要如下：
+
+  7-Zip Copyright (C) 1999-2023 Igor Pavlov.
+
+  1) 7z.dll:
+     - The "GNU LGPL" as main license for most of the code
+     - The "GNU LGPL" with "unRAR license restriction" for some code
+     - The "BSD 3-clause License" for some code
+  2) All other files: the "GNU LGPL".
+
+  Redistributions in binary form must reproduce related license
+  information from Assets/7z/License.txt.
+
+  7-Zip 可在任何计算机上使用（含商业组织），无需注册或付费。
+
+--------------------------------------------------------------------
+unRAR license restriction（上游要求的声明，须保留在文档与源码注释中）
+--------------------------------------------------------------------
+
+  The decompression engine for RAR archives was developed using
+  source code of unRAR program. All copyrights to original unRAR
+  code are owned by Alexander Roshal.
+
+  The license for original unRAR code has the following
+  restriction:
+
+    The unRAR sources cannot be used to re-create the RAR
+    compression algorithm, which is proprietary. Distribution of
+    modified unRAR sources in separate form or as a part of other
+    software is permitted, provided that it is clearly stated in
+    the documentation and source comments that the code may not be
+    used to develop a RAR (WinRAR) compatible archiver.
+
+  【中文说明】RAR 解压引擎源自 unRAR，版权归 Alexander Roshal。
+  不得使用该部分代码重新实现专有的 RAR 压缩算法；分发修改后的
+  unRAR 代码（单独或并入其他软件）时，必须在文档与源码注释中
+  明确声明：该代码不得用于开发 RAR（WinRAR）兼容的归档工具。
+  本项目仅调用 7-Zip 提供 RAR 解压能力，未实现、也不得据本项目
+  代码实现 RAR 兼容归档器。
+
+--------------------------------------------------------------------
+BSD 3-clause License（7z.dll 中的 LZFSE 解压代码）
+--------------------------------------------------------------------
+
+  Copyright (c) 2015-2016, Apple Inc. All rights reserved.
+
+  1. Redistributions of source code must retain the above
+     copyright notice, this list of conditions and the following
+     disclaimer.
+  2. Redistributions in binary form must reproduce the above
+     copyright notice, this list of conditions and the following
+     disclaimer in the documentation and/or other materials
+     provided with the distribution.
+  3. Neither the name of the copyright holder(s) nor the names of
+     any contributors may be used to endorse or promote products
+     derived from this software without specific prior written
+     permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+  USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+
+====================================================================
+其他第三方（NuGet 依赖，未随仓库分发二进制，构建时拉取）
+====================================================================
+
+- Avalonia UI 11.x ........ MIT License    https://avaloniaui.net
+- Material.Avalonia 3.x ... MIT License    https://github.com/AvaloniaCommunity/Material.Avalonia
+- .NET 8 SDK / Runtime .... MIT License    https://dotnet.microsoft.com
+
+  其完整许可见各软件包发行目录中的 LICENSE 文件，或对应官方仓库。
