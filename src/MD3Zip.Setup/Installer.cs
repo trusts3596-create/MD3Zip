@@ -20,6 +20,7 @@ internal static class Installer
     public const string ProductName = "MD3 Zip";
     public const string ProductVersion = "1.0.0";
     public const string AppExeName = "MD3Zip.App.exe";
+    public const string AppExeNameWithoutExtension = "MD3Zip.App";
     public const string UninstallScriptName = "uninstall.ps1";
 
     private const string UninstallKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\MD3Zip";
@@ -62,6 +63,11 @@ internal static class Installer
         report?.Invoke(new(L10n.L("正在准备安装目录…"), 1));
         Directory.CreateDirectory(target);
 
+        // 覆盖安装时，旧版 MD3Zip.App 可能仍在运行并锁定 DLL，
+        // 导致 ExtractToFile(overwrite:true) 抛 IOException 而静默失败。
+        // 先优雅关闭，再强制结束，确保文件可覆盖。
+        CloseExistingInstances();
+
         report?.Invoke(new(L10n.L("正在读取安装包负载…"), 3));
         using var payload = OpenPayload();
 
@@ -83,6 +89,27 @@ internal static class Installer
         }
 
         report?.Invoke(new(L10n.L("安装完成"), 100));
+    }
+
+    /// <summary>关闭已运行的 MD3Zip.App，避免覆盖安装时 DLL 被锁定。</summary>
+    private static void CloseExistingInstances()
+    {
+        foreach (var proc in Process.GetProcessesByName(AppExeNameWithoutExtension))
+        {
+            try
+            {
+                proc.CloseMainWindow();
+                if (!proc.WaitForExit(1500))
+                {
+                    proc.Kill(entireProcessTree: true);
+                    proc.WaitForExit(2000);
+                }
+            }
+            catch (Exception)
+            {
+                // 关闭失败不阻塞安装；ExtractToFile 会再尝试覆盖。
+            }
+        }
     }
 
     private static ZipArchive OpenPayload()
