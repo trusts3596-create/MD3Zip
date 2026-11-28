@@ -67,48 +67,39 @@ public static class SevenZipLocator
     }
 
     /// <summary>
-    /// 启动自检：若 Assets/7z 下缺少 7z.exe/7z.dll，尝试从本机 7-Zip 安装目录复制一份。
-    /// 返回 true 表示随包副本可用。
+    /// 启动自检：随包内核（Assets/7z）是否完整。
+    /// 缺失时**不再**从本机任何位置（系统安装目录 / PATH）复制补齐——这类副本来源不可审计，
+    /// 且可能与随包声明版本不一致。返回 false 时上层必须显式提示用户重新安装。
     /// </summary>
     public static bool EnsureBundled(out string? message)
     {
-        var targetDirectory = BundledDirectory;
-        var targetExe = Path.Combine(targetDirectory, "7z.exe");
-        var targetDll = Path.Combine(targetDirectory, "7z.dll");
-
-        if (File.Exists(targetExe) && File.Exists(targetDll))
+        var missing = MissingBundledFiles();
+        if (missing.Count == 0)
         {
             message = null;
             return true;
         }
 
-        var source = Locate();
-        if (source is null)
+        // 整句做双语 key；缺失文件名用语言中立的 ASCII 标点追加，避免英文态混入中文顿号。
+        message = L10n.L("随包内核缺失，请重新安装 MD3Zip 以恢复 Assets/7z 目录。为避免引入来源不明的内核，程序不会自动复制系统目录中的 7z 组件。")
+            + $" ({string.Join(" / ", missing)})";
+        return false;
+    }
+
+    private static List<string> MissingBundledFiles()
+    {
+        var missing = new List<string>();
+        if (!File.Exists(Path.Combine(BundledDirectory, "7z.exe")))
         {
-            message = L10n.L("未找到 7z.exe：请将 7-Zip 的 7z.exe 与 7z.dll 放入 Assets/7z 目录，或安装 7-Zip 后重试。");
-            return false;
+            missing.Add("7z.exe");
         }
 
-        try
+        if (!File.Exists(Path.Combine(BundledDirectory, "7z.dll")))
         {
-            var sourceDirectory = Path.GetDirectoryName(source)!;
-            Directory.CreateDirectory(targetDirectory);
-            File.Copy(source, targetExe, overwrite: true);
-
-            var sourceDll = Path.Combine(sourceDirectory, "7z.dll");
-            if (File.Exists(sourceDll))
-            {
-                File.Copy(sourceDll, targetDll, overwrite: true);
-            }
-
-            message = $"已从 {sourceDirectory} 自动补齐 7z 组件。";
-            return File.Exists(targetExe);
+            missing.Add("7z.dll");
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            message = $"复制 7z 组件失败（{ex.GetType().Name}）：仍将直接使用 {source}";
-            return File.Exists(targetExe);
-        }
+
+        return missing;
     }
 
     private static IEnumerable<string> EnumerateSystemFolders()

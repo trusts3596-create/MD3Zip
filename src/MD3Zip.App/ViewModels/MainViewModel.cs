@@ -882,10 +882,22 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        SevenZipLocator.EnsureBundled(out var message);
+        var bundledReady = SevenZipLocator.EnsureBundled(out var message);
         _service = new SevenZipService();
         if (_service.IsAvailable)
         {
+            // 随包内核不完整但引擎仍可用：可能是回落到本机 7-Zip，也可能是随包只剩 7z.exe。
+            // 必须显式提示，不得静默降级；此处禁止设置 EngineError——它会让 InitializeAsync 跳过归档加载。
+            if (!bundledReady)
+            {
+                var underBundled = _service.ExecutablePath.StartsWith(
+                    SevenZipLocator.BundledDirectory + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase);
+                ShowSnack(underBundled
+                    ? L10n.L("随包内核不完整，压缩/解压可能失败，请重新安装 MD3Zip。")
+                    : L10n.L("未使用随包内核，本次改用本机 7-Zip。请重新安装 MD3Zip 以恢复内置内核。"));
+            }
+
             return;
         }
 

@@ -90,7 +90,7 @@ powershell -ExecutionPolicy Bypass -File packaging\install_context_menu.ps1
 | 密码弹窗行为 | `Views/PasswordWindow.axaml.cs` | 含验证→报错→重试闭环 |
 | 右键菜单三项动作 | `src/MD3Zip.ShellExtension/ExplorerCommand.cs` | 解压/智能解压/添加到压缩包 |
 | 菜单项注册范围 | `packaging/AppxManifest.xml` | 仅 `*`/`Directory`/`Directory\Background`，**勿重复注册后缀** |
-| 升级 7-Zip 引擎 | 替换 `Assets/7z/7z.exe + 7z.dll` | 不依赖具体版本，替换即生效 |
+| 升级 7-Zip 引擎 | 替换 `Assets/7z/7z.exe + 7z.dll` | 不依赖具体版本，替换即生效（升级前须按官方 SHA-256 校验；内核缺失时程序只会提示重装，不会从系统目录自动复制） |
 
 ### 2.3 打包与安装器
 
