@@ -32,3 +32,15 @@ packaging/certs/
 Thumbs.db
 Desktop.ini
 *.tmp
+
+# ---- Qoder automation ----
+.qoder/settings.local.json
+work/out/
+*.log
+work/*-session.md
+
+# ---- dotenv & secrets ----
+.env
+.env.*
+!.env.example
+secrets/
