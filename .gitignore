@@ -44,3 +44,12 @@ work/*-session.md
 .env.*
 !.env.example
 secrets/
+
+# ---- 敏感/临时兜底（永久铁律：仓库只保留一份 README.md） ----
+*.cer
+.shots/
+*.exe
+*.dll
+*.msix
+*.appx
+HANDOVER.md
