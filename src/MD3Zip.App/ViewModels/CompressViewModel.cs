@@ -11,8 +11,13 @@ namespace MD3Zip.App.ViewModels;
 public sealed partial class CompressViewModel : ObservableObject, IDisposable
 {
     private readonly SevenZipService _service = new();
+    private static readonly string[] KnownArchiveExtensions =
+        [".7z", ".zip", ".tar", ".gz", ".bz2", ".xz"];
+
     private readonly List<string> _sources = [];
     private CancellationTokenSource? _cts;
+    private bool _outputDirUserSet;
+    private long _totalBytes;
 
     private string _fileName = L10n.L("新建压缩包.7z");
     private string _outputDirectory;
@@ -421,9 +426,72 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
 
     public bool HasSources => Sources.Count > 0;
 
+    /// <summary>gz / bz2 / xz 仅在「恰好一个普通文件」时可用。</summary>
+    public bool CanUseSingleFileFormats =>
+        _sources.Count == 1 && !Directory.Exists(_sources[0]);
+
     public string SourceSummary => Sources.Count == 0
         ? L10n.L("尚未选择要压缩的内容")
         : $"共 {Sources.Count} 项待压缩";
+
+    /// <summary>底部状态行：无源时提示引擎，有源时显示「共 N 项待压缩 · 大小」。</summary>
+    public string FooterSummary => Sources.Count == 0
+        ? L10n.L("使用内置 7z.exe 引擎压缩")
+        : $"共 {Sources.Count} 项待压缩 · {ArchiveEntry.FormatSize(_totalBytes)}";
+
+    private void RefreshDerived()
+    {
+        OnPropertyChanged(nameof(HasSources));
+        OnPropertyChanged(nameof(SourceSummary));
+        OnPropertyChanged(nameof(CanUseSingleFileFormats));
+        _totalBytes = ComputeSourcesSize();
+        OnPropertyChanged(nameof(FooterSummary));
+
+        // 当前格式被新列表判为不可用时回落到 7z（选项本身已置灰）。
+        if (IsSingleFileFormat && !CanUseSingleFileFormats)
+        {
+            ChangeFormat(ArchiveFormat.SevenZip);
+        }
+    }
+
+    private long ComputeSourcesSize()
+    {
+        long total = 0;
+        foreach (var path in _sources)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+                    {
+                        try
+                        {
+                            total += new FileInfo(file).Length;
+                        }
+                        catch (IOException)
+                        {
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                        }
+                    }
+                }
+                else if (File.Exists(path))
+                {
+                    total += new FileInfo(path).Length;
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return total;
+    }
 
     public void Seed(IReadOnlyList<string> sources)
     {
@@ -453,8 +521,14 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
 
         _sources.Add(path);
         Sources.Add(new SourceItem(path));
-        OnPropertyChanged(nameof(HasSources));
-        OnPropertyChanged(nameof(SourceSummary));
+
+        // 默认输出目录跟随首个源所在目录（用户手动指定过则不改）。
+        if (!_outputDirUserSet && _sources.Count == 1)
+        {
+            OutputDirectory = Path.GetDirectoryName(path) ?? OutputDirectory;
+        }
+
+        RefreshDerived();
     }
 
     private void RemoveSource(string? path)
@@ -472,8 +546,7 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
 
         _sources.RemoveAt(index);
         Sources.RemoveAt(index);
-        OnPropertyChanged(nameof(HasSources));
-        OnPropertyChanged(nameof(SourceSummary));
+        RefreshDerived();
     }
 
     private async Task AddFilesAsync()
@@ -519,6 +592,7 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
             return;
         }
 
+        _outputDirUserSet = true;
         OutputDirectory = Path.GetDirectoryName(path) ?? OutputDirectory;
         FileName = Path.GetFileName(path);
     }
@@ -713,15 +787,25 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
         }
 
         var trimmed = name.Trim();
-        if (trimmed.EndsWith(ExtensionForFormat(), StringComparison.OrdinalIgnoreCase))
+        var wanted = ExtensionForFormat();
+        if (trimmed.EndsWith(wanted, StringComparison.OrdinalIgnoreCase))
         {
             return trimmed;
         }
 
+        // 只剥离「已知的其它归档扩展名」，绝不按通用扩展名去猜——
+        // 否则 hap_installer-Windows-3.1.0 会被截成 hap_installer-Windows-3.1。
+        foreach (var ext in KnownArchiveExtensions)
+        {
+            if (!ext.Equals(wanted, StringComparison.OrdinalIgnoreCase)
+                && trimmed.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+            {
+                return trimmed[..^ext.Length] + wanted;
+            }
+        }
+
         // 单文件格式沿用 7-Zip 的命名习惯：a.txt → a.txt.gz
-        return IsSingleFileFormat
-            ? trimmed + ExtensionForFormat()
-            : Path.GetFileNameWithoutExtension(trimmed) + ExtensionForFormat();
+        return trimmed + wanted;
     }
 
     private void UpdateSuggestedName()
@@ -744,9 +828,9 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
 
         FileName = EnsureExtension(baseName);
 
-        if (string.IsNullOrEmpty(OutputDirectory))
+        if (!_outputDirUserSet)
         {
-            OutputDirectory = Path.GetDirectoryName(first) ?? string.Empty;
+            OutputDirectory = Path.GetDirectoryName(first) ?? OutputDirectory;
         }
     }
 

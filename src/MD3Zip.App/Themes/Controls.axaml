@@ -134,6 +134,19 @@
     <Setter Property="Foreground" Value="{DynamicResource Md3.Primary}" />
   </Style>
 
+  <Style Selector="Button.text.pill">
+    <Setter Property="Padding" Value="10,5" />
+    <Setter Property="CornerRadius" Value="16" />
+  </Style>
+
+  <Style Selector="Button.text.pill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Md3.SecondaryContainer}" />
+  </Style>
+
+  <Style Selector="Button.text.pill:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Md3.SecondaryContainer}" />
+  </Style>
+
   <Style Selector="Button.icon">
     <Setter Property="Width" Value="40" />
     <Setter Property="Height" Value="40" />

@@ -227,6 +227,7 @@
   "该压缩包需要密码。": "This archive requires a password.",
   "该图片格式无法直接解码，可用默认程序打开。": "This image format cannot be decoded here; open it with the default app.",
   "该文件不是受支持的压缩包，或已损坏。": "This file is not a supported archive or is corrupted.",
+  "该格式仅支持单文件压缩": "This format supports single-file compression only",
   "该类型不支持内置预览，可解压后使用系统默认程序打开。": "Built-in preview is unavailable for this type; extract it and open with the default app.",
   "请先勾选要删除的条目": "Select the entries to delete first",
   "请先勾选要解压的条目": "Select the entries to extract first",
