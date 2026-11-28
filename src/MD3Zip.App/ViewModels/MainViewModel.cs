@@ -877,13 +877,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void CheckEngine()
     {
-        if (_service.IsAvailable)
-        {
-            return;
-        }
-
         var bundledReady = SevenZipLocator.EnsureBundled(out var message);
-        _service = new SevenZipService();
+
+        if (!_service.IsAvailable)
+        {
+            _service = new SevenZipService();
+        }
         if (_service.IsAvailable)
         {
             // 随包内核不完整但引擎仍可用：可能是回落到本机 7-Zip，也可能是随包只剩 7z.exe。
