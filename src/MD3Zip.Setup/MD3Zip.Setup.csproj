@@ -26,7 +26,7 @@
     <Product>MD3 Zip</Product>
     <AssemblyTitle>MD3 Zip 安装程序</AssemblyTitle>
     <Description>MD3 Zip 安装向导</Description>
-    <ApplicationIcon>..\..\packaging\publish\app\Assets\AppIcon.ico</ApplicationIcon>
+    <ApplicationIcon>..\MD3Zip.App\Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
