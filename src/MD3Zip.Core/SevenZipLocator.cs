@@ -22,6 +22,13 @@ public static class SevenZipLocator
 
     public static string BundledDirectory => Path.Combine(AppContext.BaseDirectory, "Assets", BundledFolderName);
 
+    /// <summary>引擎路径是否落在随包目录内；用于区分「随包内核」与「回落本机」。</summary>
+    public static bool IsBundledPath(string? exePath)
+    {
+        return !string.IsNullOrEmpty(exePath)
+            && exePath.StartsWith(BundledDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>返回可用的 7z.exe 绝对路径，找不到时返回 null。</summary>
     public static string? Locate()
     {

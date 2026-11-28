@@ -64,6 +64,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         AddFilesCommand = new AsyncRelayCommand(AddFilesAsync);
         ToggleMoreMenuCommand = new RelayCommand(() => IsMoreMenuOpen = !IsMoreMenuOpen);
         ToggleLanguageCommand = new RelayCommand(ToggleLanguage);
+        ShowEngineInfoCommand = new AsyncRelayCommand(ShowEngineInfoAsync);
 
         CheckEngine();
 
@@ -124,8 +125,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <summary>切换中 / 英界面语言。</summary>
     public ICommand ToggleLanguageCommand { get; }
 
+    /// <summary>查看当前实际生效的压缩引擎路径与版本（诊断入口）。</summary>
+    public ICommand ShowEngineInfoCommand { get; }
+
     /// <summary>菜单里显示的语言项：当前为中文时显示「English」，反之显示「中文」。</summary>
     public string LanguageLabel => LocalizationService.Instance.IsEnglish ? "中文" : "English";
+
+    /// <summary>标题栏 7-Zip 标记的悬停提示：Locate() 实际命中的引擎路径 + 文件版本。</summary>
+    public string EngineBadgeTooltip
+    {
+        get
+        {
+            var path = _service.ExecutablePath;
+            if (string.IsNullOrEmpty(path))
+            {
+                return L10n.L("未检测到 7z 引擎");
+            }
+
+            return $"{L10n.L("压缩引擎")}: {path}\n{L10n.L("文件版本")}: {EngineVersionText()}";
+        }
+    }
 
     private void ToggleLanguage()
     {
@@ -138,6 +157,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (e.PropertyName == nameof(LocalizationService.Language))
         {
             OnPropertyChanged(nameof(LanguageLabel));
+            OnPropertyChanged(nameof(EngineBadgeTooltip));
         }
     }
 
@@ -875,6 +895,34 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _snackbarTimer.Start();
     }
 
+    private string EngineVersionText()
+    {
+        var version = _service.EngineFileVersion;
+        return string.IsNullOrEmpty(version) ? L10n.L("未知") : version;
+    }
+
+    /// <summary>「更多 → 查看压缩引擎信息」：把 Locate() 回落后的真实落点摊开给用户，消除不可见降级。</summary>
+    private async Task ShowEngineInfoAsync()
+    {
+        if (Dialogs is null)
+        {
+            return;
+        }
+
+        var path = _service.ExecutablePath;
+        var detail = string.Join(
+            Environment.NewLine,
+            $"{L10n.L("引擎路径")}: {(string.IsNullOrEmpty(path) ? L10n.L("未检测到 7z 引擎") : path)}",
+            $"{L10n.L("文件版本")}: {EngineVersionText()}",
+            $"{L10n.L("内核来源")}: {(SevenZipLocator.IsBundledPath(path) ? L10n.L("随包内核（Assets/7z）") : L10n.L("本机引擎（系统安装目录或 PATH）"))}",
+            $"{L10n.L("程序目录")}: {AppContext.BaseDirectory}");
+
+        await Dialogs.ShowMessageAsync(
+            L10n.L("压缩引擎诊断"),
+            L10n.L("以下为当前实际调用的压缩引擎，可复制用于问题排查。"),
+            detail).ConfigureAwait(true);
+    }
+
     private void CheckEngine()
     {
         var bundledReady = SevenZipLocator.EnsureBundled(out var message);
@@ -889,9 +937,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             // 必须显式提示，不得静默降级；此处禁止设置 EngineError——它会让 InitializeAsync 跳过归档加载。
             if (!bundledReady)
             {
-                var underBundled = _service.ExecutablePath.StartsWith(
-                    SevenZipLocator.BundledDirectory + Path.DirectorySeparatorChar,
-                    StringComparison.OrdinalIgnoreCase);
+                var underBundled = SevenZipLocator.IsBundledPath(_service.ExecutablePath);
                 ShowSnack(underBundled
                     ? L10n.L("随包内核不完整，压缩/解压可能失败，请重新安装 MD3Zip。")
                     : L10n.L("未使用随包内核，本次改用本机 7-Zip。请重新安装 MD3Zip 以恢复内置内核。"));

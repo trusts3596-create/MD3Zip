@@ -43,6 +43,32 @@ public sealed class SevenZipService
 
     public bool IsAvailable => !string.IsNullOrEmpty(_executablePath) && File.Exists(_executablePath);
 
+    /// <summary>当前引擎 exe 的文件版本（FileVersionInfo，不启动外部进程）；不可用或读取失败时返回空串。</summary>
+    public string EngineFileVersion
+    {
+        get
+        {
+            if (!IsAvailable)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                return FileVersionInfo.GetVersionInfo(_executablePath).FileVersion ?? string.Empty;
+            }
+            catch (ArgumentException)
+            {
+                return string.Empty;
+            }
+            catch (IOException)
+            {
+                // 诊断读取失败不得影响主流程，留空由界面显示「未知」。
+                return string.Empty;
+            }
+        }
+    }
+
     /// <summary>最近一次 7z 调用的原始输出，便于排查问题或展示“详情”。</summary>
     public string LastRawOutput { get; private set; } = string.Empty;
 
