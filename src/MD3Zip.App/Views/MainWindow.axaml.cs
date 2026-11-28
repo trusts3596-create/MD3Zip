@@ -284,6 +284,12 @@ public partial class MainWindow : Window, IDialogService
         await dialog.ShowDialog(this).ConfigureAwait(true);
     }
 
+    public async Task<bool> ShowChecksumAsync(string? archivePath)
+    {
+        var dialog = new ChecksumWindow(archivePath);
+        return await dialog.ShowDialog<bool>(this).ConfigureAwait(true);
+    }
+
     public async Task ShowPreviewAsync(string archivePath, ArchiveEntry entry, string? password)
     {
         var dialog = new PreviewWindow(archivePath, entry, password);

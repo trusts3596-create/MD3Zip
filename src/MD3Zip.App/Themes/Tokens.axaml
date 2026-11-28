@@ -37,6 +37,7 @@
       <Color x:Key="Md3.InverseSurface.Color">#322F35</Color>
       <Color x:Key="Md3.InverseOnSurface.Color">#F5EFF7</Color>
       <Color x:Key="Md3.SurfaceTint.Color">#6750A4</Color>
+      <Color x:Key="Md3.Success.Color">#1B6B33</Color>
       <Color x:Key="Md3.Scrim.Color">#000000</Color>
 
       <SolidColorBrush x:Key="Md3.Primary" Color="{StaticResource Md3.Primary.Color}" />
@@ -69,6 +70,7 @@
       <SolidColorBrush x:Key="Md3.InverseSurface" Color="{StaticResource Md3.InverseSurface.Color}" />
       <SolidColorBrush x:Key="Md3.InverseOnSurface" Color="{StaticResource Md3.InverseOnSurface.Color}" />
       <SolidColorBrush x:Key="Md3.Scrim" Color="{StaticResource Md3.Scrim.Color}" Opacity="0.4" />
+      <SolidColorBrush x:Key="Md3.Success" Color="{StaticResource Md3.Success.Color}" />
       <SolidColorBrush x:Key="Md3.MicaLayer" Color="{StaticResource Md3.Surface.Color}" Opacity="0.72" />
       <SolidColorBrush x:Key="Md3.StateHover" Color="{StaticResource Md3.OnSurface.Color}" Opacity="0.06" />
       <SolidColorBrush x:Key="Md3.StatePressed" Color="{StaticResource Md3.OnSurface.Color}" Opacity="0.12" />
@@ -108,6 +110,7 @@
       <Color x:Key="Md3.InverseSurface.Color">#E6E0E9</Color>
       <Color x:Key="Md3.InverseOnSurface.Color">#313033</Color>
       <Color x:Key="Md3.SurfaceTint.Color">#D0BCFF</Color>
+      <Color x:Key="Md3.Success.Color">#6ED291</Color>
       <Color x:Key="Md3.Scrim.Color">#000000</Color>
 
       <SolidColorBrush x:Key="Md3.Primary" Color="{StaticResource Md3.Primary.Color}" />
@@ -140,6 +143,7 @@
       <SolidColorBrush x:Key="Md3.InverseSurface" Color="{StaticResource Md3.InverseSurface.Color}" />
       <SolidColorBrush x:Key="Md3.InverseOnSurface" Color="{StaticResource Md3.InverseOnSurface.Color}" />
       <SolidColorBrush x:Key="Md3.Scrim" Color="{StaticResource Md3.Scrim.Color}" Opacity="0.5" />
+      <SolidColorBrush x:Key="Md3.Success" Color="{StaticResource Md3.Success.Color}" />
       <SolidColorBrush x:Key="Md3.MicaLayer" Color="{StaticResource Md3.Surface.Color}" Opacity="0.76" />
       <SolidColorBrush x:Key="Md3.StateHover" Color="{StaticResource Md3.OnSurface.Color}" Opacity="0.08" />
       <SolidColorBrush x:Key="Md3.StatePressed" Color="{StaticResource Md3.OnSurface.Color}" Opacity="0.16" />

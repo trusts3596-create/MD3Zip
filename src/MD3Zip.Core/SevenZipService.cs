@@ -540,7 +540,7 @@ public sealed class SevenZipService
         }
     }
 
-    /// <summary>计算文件校验和（7z h -scrc*），支持 CRC32 / SHA-1 / SHA-256。</summary>
+    /// <summary>计算单个文件的校验和（7z h -scrcXXX）；algorithm 传 All 时等价于 ComputeAllHashesAsync。</summary>
     public async Task<HashResult> ComputeHashesAsync(
         string filePath,
         HashAlgorithmKind algorithm = HashAlgorithmKind.Sha256,
@@ -560,16 +560,13 @@ public sealed class SevenZipService
             return new HashResult { Algorithm = algorithm, Message = $"找不到文件：{filePath}" };
         }
 
-        var algorithmSwitch = algorithm switch
+        if (algorithm == HashAlgorithmKind.All)
         {
-            HashAlgorithmKind.Crc32 => "-scrcCRC32",
-            HashAlgorithmKind.Sha1 => "-scrcSHA1",
-            _ => "-scrcSHA256"
-        };
+            return await ComputeAllHashesAsync(filePath, cancellationToken).ConfigureAwait(false);
+        }
 
-        var arguments = new List<string> { "h", algorithmSwitch, "-sccUTF-8", "-y", filePath };
-        var run = await RunAsync(arguments, Path.GetDirectoryName(filePath), null, L10n.L("正在计算校验和"), null, cancellationToken)
-            .ConfigureAwait(false);
+        var run = await RunAsync(AlgorithmArguments(algorithm, filePath), Path.GetDirectoryName(filePath), null,
+            L10n.L("正在计算校验和"), null, cancellationToken).ConfigureAwait(false);
 
         if (run.StartError is not null)
         {
@@ -600,9 +597,93 @@ public sealed class SevenZipService
                 Algorithm = algorithm,
                 Hash = hash,
                 Size = size,
-                Message = $"{AlgorithmDisplayName(algorithm)} 计算完成。",
+                Message = $"{algorithm.DisplayName()} 计算完成。",
                 RawOutput = run.Output
             };
+    }
+
+    /// <summary>一次算出全部校验和（7z h -scrc*）：实测输出 CRC32 / CRC64 / SHA256 / SHA1 / BLAKE2sp。</summary>
+    public async Task<HashResult> ComputeAllHashesAsync(
+        string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAvailable)
+        {
+            return new HashResult
+            {
+                Algorithm = HashAlgorithmKind.All,
+                Message = L10n.L("未检测到 7z.exe，无法计算校验和。")
+            };
+        }
+
+        if (!File.Exists(filePath))
+        {
+            return new HashResult
+            {
+                Algorithm = HashAlgorithmKind.All,
+                Message = L10n.L("找不到该文件")
+            };
+        }
+
+        var run = await RunAsync(["h", "-scrc*", "-sccUTF-8", "-y", filePath],
+            Path.GetDirectoryName(filePath), null, L10n.L("正在计算校验和"), null, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (run.StartError is not null)
+        {
+            return new HashResult
+            {
+                Algorithm = HashAlgorithmKind.All,
+                Message = run.StartError,
+                RawOutput = run.Output
+            };
+        }
+
+        if (run.ExitCode != 0)
+        {
+            return new HashResult
+            {
+                Algorithm = HashAlgorithmKind.All,
+                Message = FirstDiagnostic(run.Output) ?? $"7z 退出码 {run.ExitCode}。",
+                RawOutput = run.Output
+            };
+        }
+
+        var (digests, size) = ParseAllHashLines(run.Output);
+        if (digests.Count == 0)
+        {
+            return new HashResult
+            {
+                Algorithm = HashAlgorithmKind.All,
+                Message = L10n.L("未能从 7z 输出中解析出校验和。"),
+                RawOutput = run.Output
+            };
+        }
+
+        return new HashResult
+        {
+            Succeeded = true,
+            Algorithm = HashAlgorithmKind.All,
+            Digests = digests,
+            Hash = digests.TryGetValue("SHA-256", out var sha256) ? sha256 : null,
+            Size = size,
+            Message = L10n.L("校验和已生成"),
+            RawOutput = run.Output
+        };
+    }
+
+    /// <summary>算法 → 7z 命令行开关（实测 23.01 全部支持）。</summary>
+    private static List<string> AlgorithmArguments(HashAlgorithmKind algorithm, string filePath)
+    {
+        var switchName = algorithm switch
+        {
+            HashAlgorithmKind.Crc32 => "-scrcCRC32",
+            HashAlgorithmKind.Crc64 => "-scrcCRC64",
+            HashAlgorithmKind.Sha1 => "-scrcSHA1",
+            _ => "-scrcSHA256"
+        };
+
+        return ["h", switchName, "-sccUTF-8", "-y", filePath];
     }
 
     private async Task<ProcessRunResult> RunAsync(
@@ -998,6 +1079,7 @@ public sealed class SevenZipService
         var expectedLength = algorithm switch
         {
             HashAlgorithmKind.Crc32 => 8,
+            HashAlgorithmKind.Crc64 => 16,
             HashAlgorithmKind.Sha1 => 40,
             _ => 64
         };
@@ -1023,11 +1105,56 @@ public sealed class SevenZipService
         return (hash, size);
     }
 
-    private static string AlgorithmDisplayName(HashAlgorithmKind algorithm) => algorithm switch
+    /// <summary>把「SHA256 for data: xxxx」这类汇总行按算法名拆出来；读不到内容的占位值（带连字符）会被丢弃。</summary>
+    private static (IReadOnlyDictionary<string, string> Digests, long Size) ParseAllHashLines(string output)
     {
-        HashAlgorithmKind.Crc32 => "CRC32",
-        HashAlgorithmKind.Sha1 => "SHA-1",
-        _ => "SHA-256"
+        var digests = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        long size = 0;
+
+        foreach (var rawLine in output.Split('\n'))
+        {
+            var parts = rawLine.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 2 && parts[0] == "Size:"
+                && long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var total))
+            {
+                size = total;
+                continue;
+            }
+
+            if (parts.Length != 4 || parts[1] != "for" || parts[2] != "data:")
+            {
+                continue;
+            }
+
+            if (!DigestLabels.TryGetValue(parts[0], out var name)
+                || !parts[3].All(Uri.IsHexDigit)
+                || parts[3].Length != HashLength(name))
+            {
+                continue;
+            }
+
+            digests[name] = parts[3];
+        }
+
+        return (digests, size);
+    }
+
+    /// <summary>7z 输出里的算法标签 → 本项目统一展示名。</summary>
+    private static readonly Dictionary<string, string> DigestLabels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["CRC32"] = "CRC32",
+        ["CRC64"] = "CRC64",
+        ["SHA1"] = "SHA-1",
+        ["SHA256"] = "SHA-256",
+        ["BLAKE2sp"] = "BLAKE2sp"
+    };
+
+    private static int HashLength(string displayName) => displayName switch
+    {
+        "CRC32" => 8,
+        "CRC64" => 16,
+        "SHA-1" => 40,
+        _ => 64
     };
 
     /// <summary>压缩成功后删除源文件 / 文件夹（失败不影响压缩结果）。</summary>

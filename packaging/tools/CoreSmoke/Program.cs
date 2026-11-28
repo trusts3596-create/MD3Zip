@@ -63,6 +63,19 @@ Check("SHA-256", sha.Succeeded && sha.Hash?.Length == 64, $"{sha.Hash}");
 var crc = await service.ComputeHashesAsync(archive, HashAlgorithmKind.Crc32);
 Check("CRC32", crc.Succeeded && crc.Hash?.Length == 8, $"{crc.Hash}");
 
+// 5.1 CRC64（-scrcCRC64，16 位十六进制）
+var crc64 = await service.ComputeHashesAsync(archive, HashAlgorithmKind.Crc64);
+Check("CRC64", crc64.Hash is { Length: 16 } && crc64.Hash.All(Uri.IsHexDigit), $"{crc64.Hash}");
+
+// 5.2 全算法（-scrc*）：≥4 个算法，且逐项与上面的单算结果一致
+var all = await service.ComputeAllHashesAsync(archive);
+var allCrc = all.Digests.TryGetValue("CRC32", out var c) ? c : null;
+var allSha = all.Digests.TryGetValue("SHA-256", out var s) ? s : null;
+Check("全算法(-scrc*)", all.Digests.Count >= 4
+    && string.Equals(allCrc, crc.Hash, StringComparison.OrdinalIgnoreCase)
+    && string.Equals(allSha, sha.Hash, StringComparison.OrdinalIgnoreCase),
+    $"算法数={all.Digests.Count} / CRC32 一致={allCrc == crc.Hash} / SHA-256 一致={allSha == sha.Hash}");
+
 // 6. gzip 单文件
 var gzPath = Path.Combine(root, "a.txt.gz");
 var gzip = await service.CompressAsync(new CompressionRequest

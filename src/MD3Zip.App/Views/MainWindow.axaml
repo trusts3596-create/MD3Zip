@@ -118,7 +118,7 @@
                     Command="{Binding ExtractAllCommand}"
                     IsEnabled="{Binding HasArchive}" />
 
-            <!-- 更多：新建 / 测试 / 校验和 / 追加 / 删除（自定义 Popup 以继承 MD3 主题） -->
+            <!-- 更多：新建 / 测试 / 文件校验 / 追加 / 删除（自定义 Popup 以继承 MD3 主题） -->
             <Button x:Name="MoreButton" Classes="icon" Command="{Binding ToggleMoreMenuCommand}"
                     ToolTip.Tip="{loc:T 更多操作}">
               <Path Data="{DynamicResource Icon.Tune}" Fill="{DynamicResource Md3.OnSurfaceVariant}"
@@ -146,9 +146,8 @@
                   <Button Classes="menuItem" Content="{loc:T 测试压缩包完整性}"
                           Command="{Binding TestArchiveCommand}" Click="OnMenuActionClick"
                           IsEnabled="{Binding HasArchive}" />
-                  <Button Classes="menuItem" Content="{loc:T 计算校验和（CRC32 / SHA-256）}"
-                          Command="{Binding ComputeHashCommand}" Click="OnMenuActionClick"
-                          IsEnabled="{Binding HasArchive}" />
+                  <Button Classes="menuItem" Content="{loc:T 文件校验…}"
+                          Command="{Binding ChecksumCommand}" Click="OnMenuActionClick" />
                   <Border Classes="divider" Margin="8,4" />
                   <Button Classes="menuItem" Content="{loc:T 向压缩包添加文件…}"
                           Command="{Binding AddFilesCommand}" Click="OnMenuActionClick"

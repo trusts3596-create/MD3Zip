@@ -1,0 +1,146 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:MD3Zip.App.Localization"
+        x:Class="MD3Zip.App.Views.ChecksumWindow"
+        Title="{loc:T 文件校验和}"
+        Width="620" Height="600"
+        MinWidth="480" MinHeight="420"
+        CanResize="True"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+  <Border Background="{DynamicResource Md3.SurfaceContainerHigh}"
+          CornerRadius="28"
+          BoxShadow="0 18 48 0 #66000000"
+          ClipToBounds="True">
+    <Grid RowDefinitions="Auto,*,Auto">
+
+      <!-- 标题栏 -->
+      <Grid Grid.Row="0" Height="40" Margin="26,10,8,2" Background="Transparent"
+            PointerPressed="OnHeaderPressed">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Spacing="2">
+          <TextBlock Text="{loc:T 文件校验和}" Classes="h1" />
+          <TextBlock Text="{Binding TargetSummary}" Classes="caption" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="caption close" VerticalAlignment="Center"
+                Command="{Binding CloseCommand}" ToolTip.Tip="{loc:T 关闭}">
+          <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" />
+        </Button>
+      </Grid>
+
+      <!-- 主体 -->
+      <ScrollViewer Grid.Row="1" Padding="26,4,26,4" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16">
+
+          <!-- 校验目标 -->
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBlock Grid.Column="0" Text="{loc:T 校验目标}" Classes="label" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="text" Content="{loc:T 选择文件…}"
+                      Command="{Binding ChooseTargetCommand}" />
+            </Grid>
+            <Border Background="{DynamicResource Md3.SurfaceContainerLowest}" CornerRadius="14"
+                    Padding="14,10">
+              <TextBlock Text="{Binding TargetSummary}" Classes="body" TextTrimming="CharacterEllipsis" />
+            </Border>
+          </StackPanel>
+
+          <!-- 算法多选 -->
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBlock Grid.Column="0" Text="{loc:T 校验算法}" Classes="label" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="text" Content="{loc:T 全选}"
+                      Command="{Binding SelectAllAlgorithmsCommand}" />
+            </Grid>
+            <Border Background="{DynamicResource Md3.SurfaceContainerLowest}" CornerRadius="14" Padding="14,8">
+              <WrapPanel>
+                <CheckBox Content="CRC-32" Margin="0,4,20,4" IsChecked="{Binding IsCrc32, Mode=TwoWay}" />
+                <CheckBox Content="CRC-64" Margin="0,4,20,4" IsChecked="{Binding IsCrc64, Mode=TwoWay}" />
+                <CheckBox Content="SHA-1" Margin="0,4,20,4" IsChecked="{Binding IsSha1, Mode=TwoWay}" />
+                <CheckBox Content="SHA-256" Margin="0,4,0,4" IsChecked="{Binding IsSha256, Mode=TwoWay}" />
+              </WrapPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- 结果 -->
+          <StackPanel Spacing="8" IsVisible="{Binding HasResults}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBlock Grid.Column="0" Text="{loc:T 校验结果}" Classes="label" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="text" Content="{loc:T 复制}" Click="OnCopyClick" />
+            </Grid>
+            <TextBlock Text="{loc:T 可直接复制下方文本用于比对。}" Classes="caption" Opacity="0.8" />
+            <Border Background="{DynamicResource Md3.SurfaceContainerLowest}" CornerRadius="14" Padding="4">
+              <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                            MaxHeight="200">
+                <SelectableTextBlock Text="{Binding ResultsText}"
+                                     FontFamily="Cascadia Mono, Consolas, monospace"
+                                     FontSize="11.5"
+                                     Foreground="{DynamicResource Md3.OnSurfaceVariant}"
+                                     TextWrapping="NoWrap"
+                                     Margin="12,10" />
+              </ScrollViewer>
+            </Border>
+          </StackPanel>
+
+          <!-- 预期值比对 -->
+          <StackPanel Spacing="8">
+            <TextBlock Text="{loc:T 预期值}" Classes="label" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox Grid.Column="0" Watermark="{loc:T 粘贴预期哈希（可留空）}"
+                       Text="{Binding ExpectedValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       IsEnabled="{Binding IsIdle}" />
+              <Button Grid.Column="1" Classes="outlined" Content="{loc:T 比对}"
+                      Command="{Binding CompareCommand}" />
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasComparison}">
+              <Panel>
+                <Path Data="{DynamicResource Icon.Check}" Width="15" Height="15" Stretch="Uniform"
+                      Fill="{DynamicResource Md3.Success}" IsVisible="{Binding IsMatch}" />
+                <Path Data="{DynamicResource Icon.Warning}" Width="15" Height="15" Stretch="Uniform"
+                      Fill="{DynamicResource Md3.Error}" IsVisible="{Binding IsMismatch}" />
+              </Panel>
+              <TextBlock Text="{Binding ComparisonText}" Classes="body" VerticalAlignment="Center"
+                         Foreground="{DynamicResource Md3.Success}" IsVisible="{Binding IsMatch}" />
+              <TextBlock Text="{Binding ComparisonText}" Classes="body" VerticalAlignment="Center"
+                         Foreground="{DynamicResource Md3.Error}" IsVisible="{Binding IsMismatch}" />
+            </StackPanel>
+          </StackPanel>
+
+          <!-- 进度 -->
+          <StackPanel Spacing="6" IsVisible="{Binding IsBusy}">
+            <ProgressBar IsIndeterminate="True" Height="6" />
+            <TextBlock Text="{Binding ProgressText}" Classes="caption" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+
+          <!-- 错误提示 -->
+          <Border IsVisible="{Binding HasError}" Background="{DynamicResource Md3.ErrorContainer}"
+                  CornerRadius="12" Padding="12,10">
+            <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource Md3.OnErrorContainer}"
+                       TextWrapping="Wrap" FontSize="12.5" />
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- 底部操作 -->
+      <Grid Grid.Row="2" Margin="26,12,26,22" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <Button Classes="text" Content="{loc:T 取消计算}" Command="{Binding CancelCommand}"
+                  IsVisible="{Binding IsBusy}" />
+          <TextBlock Text="{loc:T 使用内置 7z 引擎计算校验和}" Classes="caption"
+                     VerticalAlignment="Center" IsVisible="{Binding IsIdle}" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="filled" Content="{loc:T 开始计算}"
+                Command="{Binding ComputeCommand}" IsEnabled="{Binding IsIdle}" />
+      </Grid>
+    </Grid>
+  </Border>
+</Window>

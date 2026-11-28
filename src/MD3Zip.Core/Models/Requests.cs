@@ -126,12 +126,28 @@ public sealed class UpdateRequest
     public string? WorkingDirectory { get; set; }
 }
 
-/// <summary>校验和算法（映射到 7z h 的 -scrc* 开关）。</summary>
+/// <summary>校验和算法（映射到 7z h 的 -scrc* 开关）。新成员一律追加在末尾，避免改动既有编号。</summary>
 public enum HashAlgorithmKind
 {
     Crc32,
     Sha1,
-    Sha256
+    Sha256,
+    Crc64,
+    /// <summary>-scrc*：一次算出全部算法，逐项结果见 HashResult.Digests。</summary>
+    All
+}
+
+/// <summary>算法的展示名，同时作为 HashResult.Digests 的键（与 7z 输出行对齐）。</summary>
+public static class HashAlgorithmKindExtensions
+{
+    public static string DisplayName(this HashAlgorithmKind algorithm) => algorithm switch
+    {
+        HashAlgorithmKind.Crc32 => "CRC32",
+        HashAlgorithmKind.Crc64 => "CRC64",
+        HashAlgorithmKind.Sha1 => "SHA-1",
+        HashAlgorithmKind.Sha256 => "SHA-256",
+        _ => "ALL"
+    };
 }
 
 /// <summary>一次校验和计算的结果。</summary>
@@ -151,12 +167,12 @@ public sealed class HashResult
 
     public string RawOutput { get; init; } = string.Empty;
 
-    public string AlgorithmName => Algorithm switch
-    {
-        HashAlgorithmKind.Crc32 => "CRC32",
-        HashAlgorithmKind.Sha1 => "SHA-1",
-        _ => "SHA-256"
-    };
+    /// <summary>单算法模式为空字典；-scrc* 模式为「算法展示名 → 十六进制摘要」。</summary>
+    public IReadOnlyDictionary<string, string> Digests { get; init; } = EmptyDigests;
+
+    private static readonly IReadOnlyDictionary<string, string> EmptyDigests = new Dictionary<string, string>();
+
+    public string AlgorithmName => Algorithm.DisplayName();
 }
 
 /// <summary>

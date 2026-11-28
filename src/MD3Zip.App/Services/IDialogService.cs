@@ -25,6 +25,9 @@ public interface IDialogService
 
     Task ShowCompressDialogAsync(IReadOnlyList<string> sources);
 
+    /// <summary>打开「文件校验」窗口；返回用户是否至少算出了一项结果。</summary>
+    Task<bool> ShowChecksumAsync(string? archivePath);
+
     Task ShowPreviewAsync(string archivePath, ArchiveEntry entry, string? password);
 
     Task ShowMessageAsync(string title, string message, string? detail = null);

@@ -59,7 +59,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         SelectAllCommand = new RelayCommand(SelectAll);
         ClearSelectionCommand = new RelayCommand(ClearSelection);
         TestArchiveCommand = new AsyncRelayCommand(TestArchiveAsync);
-        ComputeHashCommand = new AsyncRelayCommand(ComputeHashAsync);
+        ChecksumCommand = new AsyncRelayCommand(OpenChecksumAsync);
         DeleteSelectedCommand = new AsyncRelayCommand(DeleteSelectedAsync);
         AddFilesCommand = new AsyncRelayCommand(AddFilesAsync);
         ToggleMoreMenuCommand = new RelayCommand(() => IsMoreMenuOpen = !IsMoreMenuOpen);
@@ -110,8 +110,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <summary>测试压缩包完整性（7z t）。</summary>
     public ICommand TestArchiveCommand { get; }
 
-    /// <summary>计算当前压缩包的 CRC32 / SHA-256。</summary>
-    public ICommand ComputeHashCommand { get; }
+    /// <summary>打开「文件校验」窗口（算法可选，结果可与预期值比对）。</summary>
+    public ICommand ChecksumCommand { get; }
 
     /// <summary>删除选中的归档内条目（7z d）。</summary>
     public ICommand DeleteSelectedCommand { get; }
@@ -668,43 +668,22 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         await Dialogs.ShowMessageAsync(L10n.L("压缩包测试失败"), result.Message, _service.LastRawOutput).ConfigureAwait(true);
     }
 
-    private async Task ComputeHashAsync()
+    private async Task OpenChecksumAsync()
     {
-        if (_archivePath is null || Dialogs is null)
+        if (Dialogs is null)
         {
             return;
         }
 
-        IsBusy = true;
-        IsIndeterminate = true;
-        ProgressText = L10n.L("正在计算 CRC32…");
-
-        var crc = await _service.ComputeHashesAsync(_archivePath, HashAlgorithmKind.Crc32).ConfigureAwait(true);
-        ProgressText = L10n.L("正在计算 SHA-256…");
-        var sha = await _service.ComputeHashesAsync(_archivePath, HashAlgorithmKind.Sha256).ConfigureAwait(true);
-
-        IsBusy = false;
-
-        if (!sha.Succeeded && !crc.Succeeded)
+        // 校验耗时发生在弹窗内（自带进度与错误区），主窗口只在拿到结果后更新状态。
+        var computed = await Dialogs.ShowChecksumAsync(_archivePath).ConfigureAwait(true);
+        if (!computed)
         {
-            StatusText = L10n.L("校验和计算失败");
-            ShowSnack(sha.Message);
-            await Dialogs.ShowMessageAsync(L10n.L("校验和失败"), sha.Message, sha.RawOutput).ConfigureAwait(true);
             return;
         }
-
-        var info = new FileInfo(_archivePath);
-        var detail = string.Join(
-            Environment.NewLine,
-            $"文件     : {Path.GetFileName(_archivePath)}",
-            $"大小     : {ArchiveEntry.FormatSize(info.Length)}（{info.Length:N0} 字节）",
-            $"CRC32    : {crc.Hash ?? "—"}",
-            $"SHA-256  : {sha.Hash ?? "—"}",
-            $"修改时间 : {info.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
 
         StatusText = L10n.L("校验和已生成");
         ShowSnack(L10n.L("校验和已生成"));
-        await Dialogs.ShowMessageAsync(L10n.L("文件校验和"), L10n.L("可直接复制下方文本用于比对。"), detail).ConfigureAwait(true);
     }
 
     private async Task DeleteSelectedAsync()
