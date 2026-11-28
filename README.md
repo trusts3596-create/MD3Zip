@@ -7,7 +7,7 @@ Material Design 3 风格的 7-Zip 外壳，支持 Windows 11 现代右键菜单�
 
 | 版本 | 安装包 | 说明 |
 | --- | --- | --- |
-| v1.0.0 | [MD3Zip-Setup-x64.exe](https://github.com/trusts3596-create/MD3Zip/releases/download/v1.0.0/MD3Zip-Setup-x64.exe) | Windows 10/11 x64，约 89 MB，自包含运行时；使用自签名证书，SmartScreen 提示时选「更多信息 → 仍要运行」 |
+| v1.0.1 | [MD3Zip-Setup-x64.exe](https://github.com/trusts3596-create/MD3Zip/releases/download/v1.0.1/MD3Zip-Setup-x64.exe) | Windows 10/11 x64，约 89 MB，自包含运行时；使用自签名证书，SmartScreen 提示时选「更多信息 → 仍要运行」 |
 
 | | |
 | --- | --- |
