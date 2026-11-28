@@ -16,6 +16,8 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // 高 DPI：强制 PerMonitorV2，避免 125%/150% 缩放下向导控件错位。
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         ApplicationConfiguration.Initialize();
 
         var silent = HasFlag(args, "/S") || HasFlag(args, "--silent");
