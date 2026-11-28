@@ -23,7 +23,7 @@ Material Design 3 风格的 **7-Zip 图形外壳**（Windows 11 桌面端）。�
 
 | 版本 | 附件 | SHA-256 |
 | --- | --- | --- |
-| v1.1.1 | [Releases](https://github.com/trusts3596-create/MD3Zip/releases/tag/v1.1.1) 页 `MD3Zip-Setup-x64.exe`（89 MB，x64） | `81355b09970c0cb377f4798b57c2220c10f02a065db7b0d78d5c9f2e95d5ad37` |
+| v1.2.0 | [Releases](https://github.com/trusts3596-create/MD3Zip/releases/tag/v1.2.0) 页 `MD3Zip-Setup-x64.exe`（89 MB，x64） | `2edbb59d924b4db029ded97c0b819de7f0108492e7ed2b2ac90fb8fdeb3f2e98` |
 
 双击图形向导，或静默安装：`MD3Zip-Setup-x64.exe /S [/D="目标目录"]`。默认装到 `%LOCALAPPDATA%\Programs\MD3 Zip`，全程无需管理员。
 
