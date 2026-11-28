@@ -135,7 +135,7 @@
               <Border Background="{DynamicResource Md3.OverlaySurface}"
                       BorderBrush="{DynamicResource Md3.OverlayBorder}"
                       BorderThickness="1"
-                      CornerRadius="16"
+                      CornerRadius="12"
                       Padding="6"
                       MinWidth="252"
                       BoxShadow="0 10 28 0 #55000000">
@@ -216,7 +216,7 @@
         <!-- 引擎缺失提示 -->
         <Border Grid.Row="0" IsVisible="{Binding HasEngineError}"
                 Background="{DynamicResource Md3.ErrorContainer}"
-                CornerRadius="16" Padding="16,12">
+                CornerRadius="12" Padding="16,12">
           <StackPanel Orientation="Horizontal" Spacing="12">
             <Path Data="{DynamicResource Icon.Warning}" Fill="{DynamicResource Md3.OnErrorContainer}"
                   Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center" />
@@ -231,9 +231,9 @@
 
         <!-- 归档概要 -->
         <Border Grid.Row="1" IsVisible="{Binding HasArchive}"
-                Background="{DynamicResource Md3.SurfaceContainerLow}" CornerRadius="20" Padding="20,14">
+                Background="{DynamicResource Md3.SurfaceContainerLow}" CornerRadius="12" Padding="20,14">
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
-            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="14"
+            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12"
                     Background="{DynamicResource Md3.PrimaryContainer}">
               <Path Data="{DynamicResource Icon.FolderZip}" Fill="{DynamicResource Md3.OnPrimaryContainer}"
                     Width="22" Height="22" Stretch="Uniform"
@@ -298,7 +298,7 @@
         <!-- 空状态 -->
         <Panel Grid.Row="2" IsVisible="{Binding HasNoArchive}">
           <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14" MaxWidth="460">
-            <Border Width="96" Height="96" CornerRadius="28"
+            <Border Width="96" Height="96" CornerRadius="16"
                     Background="{DynamicResource Md3.SurfaceContainerHigh}"
                     HorizontalAlignment="Center">
               <Path Data="{DynamicResource Icon.FolderZip}" Fill="{DynamicResource Md3.Primary}"
@@ -327,9 +327,9 @@
 
       <!-- 拖放提示层 -->
       <Border Name="DropOverlay" IsVisible="False"
-              Background="{DynamicResource Md3.Scrim}" CornerRadius="24">
+              Background="{DynamicResource Md3.Scrim}" CornerRadius="12">
         <Border BorderBrush="{DynamicResource Md3.Primary}" BorderThickness="2"
-                CornerRadius="20" Margin="10" >
+                CornerRadius="12" Margin="10" >
           <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
             <Path Data="{DynamicResource Icon.Add}" Fill="{DynamicResource Md3.Primary}"
                   Width="40" Height="40" Stretch="Uniform" HorizontalAlignment="Center" />
@@ -342,7 +342,7 @@
       <Border IsVisible="{Binding IsBusy}"
               VerticalAlignment="Bottom" HorizontalAlignment="Left"
               Background="{DynamicResource Md3.SurfaceContainerHigh}"
-              CornerRadius="18" Padding="18,14" Width="480" Margin="0,0,0,6"
+              CornerRadius="12" Padding="18,14" Width="480" Margin="0,0,0,6"
               BoxShadow="0 4 16 0 #33000000">
         <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
           <Grid ColumnDefinitions="*,Auto">
@@ -371,7 +371,7 @@
               HorizontalAlignment="Center" VerticalAlignment="Bottom"
               Margin="0,0,0,84"
               Background="{DynamicResource Md3.InverseSurface}"
-              CornerRadius="12" Padding="18,12"
+              CornerRadius="8" Padding="18,12"
               BoxShadow="0 6 18 0 #40000000">
         <TextBlock Text="{Binding SnackbarText}" Foreground="{DynamicResource Md3.InverseOnSurface}"
                    FontSize="13" TextWrapping="Wrap" MaxWidth="620" />

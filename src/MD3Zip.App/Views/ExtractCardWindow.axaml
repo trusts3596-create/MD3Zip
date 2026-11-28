@@ -13,14 +13,14 @@
         WindowStartupLocation="Manual">
 
   <Border Background="{DynamicResource Md3.SurfaceContainerHigh}"
-          CornerRadius="24"
+          CornerRadius="8"
           BoxShadow="0 16 40 0 #66000000"
           ClipToBounds="True">
     <Grid RowDefinitions="Auto,*,Auto" Margin="20,16,16,16" Background="Transparent"
           PointerPressed="OnCardPressed">
 
       <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="12"
+        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10"
                 Background="{DynamicResource Md3.PrimaryContainer}">
           <Panel>
             <Path Data="{DynamicResource Icon.Extract}" Fill="{DynamicResource Md3.OnPrimaryContainer}"

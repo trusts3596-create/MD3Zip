@@ -609,7 +609,7 @@ public sealed partial class CompressViewModel : ObservableObject, IDisposable
         // 单文件格式沿用源文件名：a.txt → a.txt.gz（7-Zip 的行为）。
         FileName = IsSingleFileFormat && _sources.Count == 1 && File.Exists(_sources[0])
             ? EnsureExtension(Path.GetFileName(_sources[0]))
-            : EnsureExtension(Path.GetFileNameWithoutExtension(FileName));
+            : EnsureExtension(FileName);  // 裸名不再二次剥离：EnsureExtension 的白名单已覆盖两种形态
 
         OnPropertyChanged(nameof(IsSevenZip));
         OnPropertyChanged(nameof(IsZip));

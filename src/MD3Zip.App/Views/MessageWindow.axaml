@@ -10,7 +10,7 @@
         TransparencyLevelHint="Transparent"
         WindowStartupLocation="CenterOwner">
 
-  <Border Background="{DynamicResource Md3.SurfaceContainerHigh}" CornerRadius="28"
+  <Border Background="{DynamicResource Md3.SurfaceContainerHigh}" CornerRadius="8"
           BoxShadow="0 18 48 0 #66000000" ClipToBounds="True">
     <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="26,20,26,20">
 
@@ -18,7 +18,7 @@
             PointerPressed="OnHeaderPressed">
         <StackPanel Grid.Column="0" Spacing="8">
           <StackPanel Orientation="Horizontal" Spacing="12">
-            <Border Width="36" Height="36" CornerRadius="12"
+            <Border Width="36" Height="36" CornerRadius="10"
                     Background="{DynamicResource Md3.ErrorContainer}">
               <Path Data="{DynamicResource Icon.Warning}" Fill="{DynamicResource Md3.OnErrorContainer}"
                     Width="18" Height="18" Stretch="Uniform"
@@ -37,7 +37,7 @@
       <Border Name="DetailDivider" Grid.Row="1" Classes="divider" Margin="0,14,0,10" />
 
       <Border Name="DetailBorder" Grid.Row="2" Background="{DynamicResource Md3.SurfaceContainerLowest}"
-              CornerRadius="14" Padding="4">
+              CornerRadius="10" Padding="4">
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
           <SelectableTextBlock Name="DetailText"
                                FontFamily="Cascadia Mono, Consolas, monospace"
